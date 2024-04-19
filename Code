@@ -1,0 +1,151 @@
+import logging
+
+import json
+
+import asyncio
+
+from flask import Flask, request, Response
+
+ 
+
+app = Flask(__name__)
+
+ 
+
+# On définit une fonction pour simuler la création du noyau
+
+async def creer_noyau_pour_requete():
+
+    await asyncio.sleep(1)  # On simule une opération asynchrone
+
+    return "Noyau créé"
+
+ 
+
+# On définit une fonction pour simuler le routage de la demande
+
+async def router_requete(noyau, demande):
+
+    await asyncio.sleep(1)  # On simule une opération asynchrone
+
+    return f"Traitement de la demande '{demande}' avec le noyau '{noyau}' terminé"
+
+ 
+
+# On définit une fonction pour simuler la génération de réponse avec code
+
+def generer_reponse_chat(prompt):
+
+    return f"Réponse générée pour '{prompt}' avec code"
+
+ 
+
+# On définit une fonction pour le traitement des opérations mathématiques
+
+def operation_mathematique(operation, num1, num2):
+
+    if operation == "addition":
+
+        return num1 + num2
+
+    elif operation == "soustraction":
+
+        return num1 - num2
+
+    elif operation == "multiplication":
+
+        return num1 * num2
+
+    elif operation == "division":
+
+        if num2 != 0:
+
+            return num1 / num2
+
+        else:
+
+            raise ValueError("Erreur de division par zéro")
+
+    else:
+
+        raise ValueError("Opération invalide")
+
+ 
+
+# On définit les routes pour l'API
+
+@app.route("/creer_noyau", methods=["GET"])
+
+async def creer_noyau():
+
+    logging.info("Création du noyau...")
+
+    noyau = await creer_noyau_pour_requete()
+
+    return Response(json.dumps({"noyau": noyau}), status=200, mimetype="application/json")
+
+ 
+
+@app.route("/router_requete", methods=["POST"])
+
+async def router_requete_route():
+
+    logging.info("Routage de la demande...")
+
+    donnees = request.get_json()
+
+    noyau = donnees["noyau"]
+
+    demande = donnees["demande"]
+
+    resultat = await router_requete(noyau, demande)
+
+    return Response(json.dumps({"resultat": resultat}), status=200, mimetype="application/json")
+
+ 
+
+@app.route("/generer_reponse", methods=["POST"])
+
+def generer_reponse():
+
+    logging.info("Génération de la réponse...")
+
+    donnees = request.get_json()
+
+    prompt = donnees["prompt"]
+
+    reponse = generer_reponse_chat(prompt)
+
+    return Response(json.dumps({"reponse": reponse}), status=200, mimetype="application/json")
+
+ 
+
+@app.route("/operation_mathematique", methods=["POST"])
+
+def operation_mathematique_route():
+
+    logging.info("Exécution de l'opération mathématique...")
+
+    donnees = request.get_json()
+
+    operation = donnees["operation"]
+
+    num1 = donnees["num1"]
+
+    num2 = donnees["num2"]
+
+    try:
+
+        resultat = operation_mathematique(operation, num1, num2)
+
+        return Response(json.dumps({"resultat": resultat}), status=200, mimetype="application/json")
+
+    except ValueError as ex:
+
+        return Response(json.dumps({"erreur": str(ex)}), status=400, mimetype="application/json")
+
+ 
+
+if __name__ == "__main__":
+
+    app.run(debug=True)
